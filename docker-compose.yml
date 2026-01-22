@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: auction-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    command: mongod --replSet rs0
+    networks:
+      - auction-network
+
+  mongo-setup:
+    image: mongo:7.0
+    container_name: auction-mongo-setup
+    restart: "no"
+    depends_on:
+      - mongodb
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        sleep 15
+        mongosh --host mongodb:27017 --eval "
+        try {
+          var status = rs.status();
+          print('Replica set already initialized');
+        } catch (e) {
+          print('Initializing replica set...');
+          rs.initiate({
+            _id: 'rs0',
+            members: [{ _id: 0, host: 'mongodb:27017' }]
+          });
+          print('Replica set initialized successfully');
+        }
+        "
+        echo "Setup complete, exiting..."
+    networks:
+      - auction-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: auction-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - auction-network
+
+  backend:
+    build: .
+    container_name: auction-backend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/auctions?replicaSet=rs0
+      REDIS_URL: redis://redis:6379
+      PORT: 3000
+      JWT_SECRET: your-secret-key-change-in-production
+    depends_on:
+      - mongodb
+      - redis
+      - mongo-setup
+    volumes:
+      - ./src:/app/src
+      - ./dist:/app/dist
+    networks:
+      - auction-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  auction-network:
+    driver: bridge
+

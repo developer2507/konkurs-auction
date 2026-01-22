@@ -1,0 +1,42 @@
+{
+  "name": "telegram-gift-auctions",
+  "version": "1.0.0",
+  "description": "Telegram Gift Auctions implementation",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "start": "node dist/app.js",
+    "test": "jest",
+    "load-test": "k6 run load-test/load-test.js",
+    "create-test-data": "ts-node scripts/create-test-data.ts",
+    "bot": "ts-node scripts/bot.ts"
+  },
+  "keywords": ["auction", "telegram", "gifts"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "mongoose": "^8.0.3",
+    "redis": "^4.6.12",
+    "bullmq": "^5.3.0",
+    "ioredis": "^5.3.2",
+    "redlock": "^5.0.0-beta.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "zod": "^3.22.4",
+    "express-rate-limit": "^7.1.5",
+    "winston": "^3.11.0",
+    "axios": "^1.6.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "@types/cors": "^2.8.17",
+    "typescript": "^5.3.3",
+    "ts-node-dev": "^2.0.0",
+    "ts-node": "^10.9.2"
+  }
+}
+
