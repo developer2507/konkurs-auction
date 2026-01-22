@@ -1,6 +1,22 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const RAW_API_URL = import.meta.env.VITE_API_URL;
+const API_URL = (RAW_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : ''))
+  .replace(/\/+$/, ''); // remove trailing slashes
+
+if (import.meta.env.PROD) {
+  if (!RAW_API_URL) {
+    // eslint-disable-next-line no-console
+    console.error(
+      '[config] VITE_API_URL is not set. Set it in Vercel Environment Variables to your backend origin, e.g. https://konkurs-auction.onrender.com'
+    );
+  } else if (RAW_API_URL.includes('/api')) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[config] VITE_API_URL should be the backend ORIGIN without "/api". Current: ${RAW_API_URL}`
+    );
+  }
+}
 
 export const api = axios.create({
   baseURL: API_URL,

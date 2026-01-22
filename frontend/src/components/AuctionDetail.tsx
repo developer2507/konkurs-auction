@@ -67,7 +67,8 @@ export const AuctionDetail: React.FC = () => {
   }, [socket, id]);
 
   const connectWebSocket = () => {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const rawBaseUrl = import.meta.env.VITE_API_URL;
+    const baseUrl = (rawBaseUrl || (import.meta.env.DEV ? 'http://localhost:3000' : '')).replace(/\/+$/, '');
     const newSocket = io(baseUrl);
     newSocket.on('connect', () => {
       if (id) {

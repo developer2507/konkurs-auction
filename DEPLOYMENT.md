@@ -1,5 +1,24 @@
 # Инструкции по развёртыванию
 
+## Vercel (Frontend) + Render (Backend)
+
+### 1) Backend (Render)
+
+- Задеплойте backend на Render (Web Service)
+- Убедитесь, что backend живой:
+  - `GET /health` или `GET /healthz`
+
+### 2) Frontend (Vercel)
+
+На Vercel фронт собирается **на этапе build**, поэтому переменная должна быть задана **в Vercel → Project → Settings → Environment Variables** и после этого нужен **Redeploy**.
+
+- **`VITE_API_URL`**: URL backend **origin** (без `/api`)
+  - Пример: `https://konkurs-auction.onrender.com`
+
+Важно:
+- Не ставьте `.../api` в `VITE_API_URL`, иначе получится `.../api/api/...`
+- В production не используйте `http://` — на Vercel (HTTPS) браузер заблокирует mixed-content
+
 ## Production Deployment
 
 ### Требования
