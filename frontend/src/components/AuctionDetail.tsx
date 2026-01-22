@@ -67,7 +67,8 @@ export const AuctionDetail: React.FC = () => {
   }, [socket, id]);
 
   const connectWebSocket = () => {
-    const newSocket = io('http://localhost:3000');
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    const newSocket = io(baseUrl);
     newSocket.on('connect', () => {
       if (id) {
         newSocket.emit('subscribe:auction', id);
