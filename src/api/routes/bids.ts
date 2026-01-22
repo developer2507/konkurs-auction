@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import mongoose from 'mongoose';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { bidRateLimiter } from '../middleware/rateLimiter';
@@ -11,7 +11,7 @@ const router = Router();
  * POST /api/bids
  * Разместить ставку
  */
-router.post('/', authMiddleware, bidRateLimiter, async (req: AuthRequest, res) => {
+router.post('/', authMiddleware, bidRateLimiter, async (req: AuthRequest, res: Response) => {
   try {
     const { auctionId, amount } = req.body;
 
@@ -59,7 +59,7 @@ router.post('/', authMiddleware, bidRateLimiter, async (req: AuthRequest, res) =
  * GET /api/bids/user
  * Получить ставки текущего пользователя
  */
-router.get('/user', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/user', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userObjectId!;
     const auctionId = req.query.auctionId

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { UserService } from '../../modules/users/user.service';
 import { BalanceService } from '../../modules/balance/balance.service';
@@ -11,7 +11,7 @@ const router = Router();
  * Получить информацию о текущем пользователе (создаёт, если не существует)
  * Поддерживает как ObjectId, так и строковые идентификаторы
  */
-router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userObjectId!;
     const user = await UserService.getUserById(userId);
@@ -36,7 +36,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res) => {
  * POST /api/users
  * Создать пользователя (опционально с привязкой к userId из заголовка)
  */
-router.post('/', authMiddleware, async (req: AuthRequest, res) => {
+router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     // В текущей демо-схеме пользователь создаётся/резолвится в authMiddleware.
     // Поэтому этот endpoint просто возвращает текущего пользователя.
@@ -62,7 +62,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
  * POST /api/users/deposit
  * Пополнить баланс
  */
-router.post('/deposit', authMiddleware, async (req: AuthRequest, res) => {
+router.post('/deposit', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { amount } = req.body;
     const parsedAmount = parseInt(amount, 10);
@@ -90,7 +90,7 @@ router.post('/deposit', authMiddleware, async (req: AuthRequest, res) => {
  * GET /api/users/transactions
  * Получить историю транзакций
  */
-router.get('/transactions', authMiddleware, async (req: AuthRequest, res) => {
+router.get('/transactions', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userObjectId!;
     const limit = parseInt(req.query.limit as string, 10) || 50;
@@ -105,7 +105,7 @@ router.get('/transactions', authMiddleware, async (req: AuthRequest, res) => {
  * POST /api/users/reconcile
  * Возвращает заблокированные средства из завершённых аукционов
  */
-router.post('/reconcile', authMiddleware, async (req: AuthRequest, res) => {
+router.post('/reconcile', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userObjectId!;
     const result = await BidService.refundFinishedAuctionBidsForUser(userId);

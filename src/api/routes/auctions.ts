@@ -1,4 +1,4 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { AuctionService } from '../../modules/auctions/auction.service';
@@ -10,7 +10,7 @@ const router = Router();
  * GET /api/auctions
  * Получить список активных аукционов
  */
-router.get('/', async (req, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
     const auctions = await AuctionService.getActiveAuctions();
     return res.json({ auctions });
@@ -23,7 +23,7 @@ router.get('/', async (req, res: Response) => {
  * GET /api/auctions/:id
  * Получить детали аукциона
  */
-router.get('/:id', async (req, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const auctionId = new mongoose.Types.ObjectId(req.params.id);
     const auction = await AuctionService.getAuctionById(auctionId);
@@ -166,7 +166,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res: Response) => {
  * GET /api/auctions/:id/bids
  * Получить ставки аукциона
  */
-router.get('/:id/bids', async (req, res: Response) => {
+router.get('/:id/bids', async (req: Request, res: Response) => {
   try {
     const auctionId = new mongoose.Types.ObjectId(req.params.id);
     const limit = parseInt(req.query.limit as string, 10) || 50;
