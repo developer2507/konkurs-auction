@@ -1,17 +1,43 @@
 import Redis from 'ioredis';
 import { config } from './config';
 
+function parseRedisUrl(redisUrl: string): {
+  host: string;
+  port: number;
+  username?: string;
+  password?: string;
+  tls?: Record<string, unknown>;
+} | null {
+  try {
+    const url = new URL(redisUrl);
+    const host = url.hostname || 'localhost';
+    const port = url.port ? parseInt(url.port, 10) : 6379;
+    const username = url.username ? decodeURIComponent(url.username) : undefined;
+    const password = url.password ? decodeURIComponent(url.password) : undefined;
+    const tls = url.protocol === 'rediss:' ? {} : undefined;
+    return { host, port, username, password, tls };
+  } catch {
+    return null;
+  }
+}
+
+const parsed = parseRedisUrl(config.redisUrl);
+const effectivePassword = parsed?.password || config.redisPassword;
+
 // Основное подключение Redis для обычного использования
 export const redis = new Redis(config.redisUrl, {
   retryStrategy: (times) => {
     const delay = Math.min(times * 50, 2000);
     return delay;
   },
-  maxRetriesPerRequest: 3 // Для обычного использования
+  maxRetriesPerRequest: 3, // Для обычного использования
+  ...(parsed?.username ? { username: parsed.username } : {}),
+  ...(effectivePassword ? { password: effectivePassword } : {}),
+  ...(parsed?.tls ? { tls: parsed.tls } : {})
 });
 
-redis.on('connect', () => {
-  console.log('✅ Redis connected');
+redis.on('ready', () => {
+  console.log('✅ Redis ready');
 });
 
 redis.on('error', (error) => {
@@ -25,7 +51,10 @@ export const getBullMQConnectionConfig = () => {
   const nullValue: null = null;
   
   // Парсим redisUrl (простой вариант для localhost)
-  if (config.redisUrl === 'redis://localhost:6379' || config.redisUrl === 'redis://127.0.0.1:6379') {
+  if (
+    config.redisUrl === 'redis://localhost:6379' ||
+    config.redisUrl === 'redis://127.0.0.1:6379'
+  ) {
     return {
       host: 'localhost',
       port: 6379,
@@ -38,9 +67,15 @@ export const getBullMQConnectionConfig = () => {
   // Для более сложных URL (если нужна поддержка авторизации и т.д.)
   try {
     const url = new URL(config.redisUrl);
+    const username = url.username ? decodeURIComponent(url.username) : undefined;
+    const password = url.password ? decodeURIComponent(url.password) : undefined;
+    const tls = url.protocol === 'rediss:' ? {} : undefined;
     return {
       host: url.hostname || 'localhost',
       port: url.port ? parseInt(url.port, 10) : 6379,
+      ...(username ? { username } : {}),
+      ...(password || config.redisPassword ? { password: password || config.redisPassword } : {}),
+      ...(tls ? { tls } : {}),
       maxRetriesPerRequest: nullValue,
       enableReadyCheck: false,
       lazyConnect: false
@@ -50,6 +85,7 @@ export const getBullMQConnectionConfig = () => {
     return {
       host: 'localhost',
       port: 6379,
+      ...(config.redisPassword ? { password: config.redisPassword } : {}),
       maxRetriesPerRequest: nullValue,
       enableReadyCheck: false,
       lazyConnect: false
