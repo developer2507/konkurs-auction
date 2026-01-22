@@ -13,9 +13,11 @@ export function setupRoutes(app: Express) {
   app.use('/api/bids', bidsRouter);
   app.use('/api/users', usersRouter);
 
-  // Health check
-  app.get('/health', (_req: Request, res: Response) => {
+  // Health check (оба варианта: /health и /healthz)
+  const healthHandler = (_req: Request, res: Response) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
+  };
+  app.get('/health', healthHandler);
+  app.get('/healthz', healthHandler);
 }
 
